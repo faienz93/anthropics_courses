@@ -1,0 +1,16 @@
+{
+    // Enable formatting when you save a file
+    "editor.formatOnSave": true,
+
+    // Set the default formatter specifically for Python files
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter" 
+        // Se usi autopep8, cambia la riga sopra in: 
+        // "editor.defaultFormatter": "ms-python.autopep8"
+    },
+
+    // Optional: organize imports automatically on save
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+    }
+}
