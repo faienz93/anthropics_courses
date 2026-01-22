@@ -9,3 +9,18 @@ Welcome to Anthropic's educational courses. This repository currently contains f
 5. [Tool use](./tool_use/README.md) - teaches everything you need to know to implement tool use successfully in your workflows with Claude.
 
 **Please note that these courses often favor our lowest-cost model, Claude 3 Haiku, to keep API costs down for students following along with the materials. Feel free to use other Claude models if you prefer.**
+
+
+## Run python script
+- `pyenv install $(cat .python-version)`
+- `pyenv local $(cat .python-version)`
+- Verifica:
+
+```bash
+python --version                  
+Python 3.11.7
+```
+
+- `python -m venv .venv`
+- `source .venv/bin/activate`
+- `pip install -r requirements.txs`
