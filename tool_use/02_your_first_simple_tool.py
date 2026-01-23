@@ -23,52 +23,7 @@ def calculator(operation, operand1, operand2):
         raise ValueError(f"Unsupported operation: {operation}")
 
 
-# search_product_tool = {
-#     "name": "search_product",
-#     "description": "Search for a product by name or keyword and return its current price and availability.",
-#     "input_schema": {
-#         "type": "object",
-#         "properties": {
-#             "query": {
-#                 "type": "string",
-#                 "description": "The product name or search keyword, e.g. 'iPhone 13 Pro' or 'wireless headphones'",
-#             },
-#             "category": {
-#                 "type": "string",
-#                 "enum": ["electronics", "clothing", "home", "toys", "sports"],
-#                 "description": "The product category to narrow down the search results",
-#             },
-#             "max_price": {
-#                 "type": "number",
-#                 "description": "The maximum price of the product, used to filter the search results",
-#             },
-#         },
-#         "required": ["query"],
-#     },
-# }
 
-# sender_email_tool = {
-#   "name": "send_email",
-#   "description": "Sends an email to the specified recipient with the given subject and body.",
-#   "input_schema": {
-#     "type": "object",
-#     "properties": {
-#       "to": {
-#         "type": "string",
-#         "description": "The email address of the recipient"
-#       },
-#       "subject": {
-#         "type": "string",
-#         "description": "The subject line of the email"
-#       },
-#       "body": {
-#         "type": "string",
-#         "description": "The content of the email message"
-#       }
-#     },
-#     "required": ["to", "subject", "body"]
-#   }
-# }
 calculator_tool = {
     "name": "calculator",
     "description": "A simple calculator that performs basic arithmetic operations.",
@@ -145,3 +100,51 @@ def prompt_claude(prompt):
 # prompt_claude("I had 23 chickens but 2 flew away.  How many are left?")
 # prompt_claude("What is 201 times 2")
 # prompt_claude("Write me a haiku about the ocean")
+
+
+# search_product_tool = {
+#     "name": "search_product",
+#     "description": "Search for a product by name or keyword and return its current price and availability.",
+#     "input_schema": {
+#         "type": "object",
+#         "properties": {
+#             "query": {
+#                 "type": "string",
+#                 "description": "The product name or search keyword, e.g. 'iPhone 13 Pro' or 'wireless headphones'",
+#             },
+#             "category": {
+#                 "type": "string",
+#                 "enum": ["electronics", "clothing", "home", "toys", "sports"],
+#                 "description": "The product category to narrow down the search results",
+#             },
+#             "max_price": {
+#                 "type": "number",
+#                 "description": "The maximum price of the product, used to filter the search results",
+#             },
+#         },
+#         "required": ["query"],
+#     },
+# }
+
+# sender_email_tool = {
+#   "name": "send_email",
+#   "description": "Sends an email to the specified recipient with the given subject and body.",
+#   "input_schema": {
+#     "type": "object",
+#     "properties": {
+#       "to": {
+#         "type": "string",
+#         "description": "The email address of the recipient"
+#       },
+#       "subject": {
+#         "type": "string",
+#         "description": "The subject line of the email"
+#       },
+#       "body": {
+#         "type": "string",
+#         "description": "The content of the email message"
+#       }
+#     },
+#     "required": ["to", "subject", "body"]
+#   }
+# }
