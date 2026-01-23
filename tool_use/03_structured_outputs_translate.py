@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import os
 from anthropic import Anthropic
-
+import json
 load_dotenv()
 my_api_key = os.getenv("ANTHROPIC_API_KEY")
 client = Anthropic(api_key=my_api_key)
@@ -17,8 +17,8 @@ import wikipedia
 #tool definition
 tools = [
     {
-        "name": "print_article_classification",
-        "description": "Prints the classification results.",
+        "name": "print_translation",
+        "description": "Translate the result.",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -54,38 +54,6 @@ tools = [
     }
 ]
 
-import json
-#The function that generates the json for a given article subject
-def generate_json_for_article(subject):
-    page = wikipedia.page(subject, auto_suggest=True)
-    query = f"""
-    <document>
-    {page.content}
-    </document>
-
-    Use the print_article_classification tool. Example categories are Politics, Sports, Technology, Entertainment, Business.
-    """
-
-    response = client.messages.create(
-        model=MODEL_NAME,
-        max_tokens=4096,
-        tools=tools,
-        messages=[{"role": "user", "content": query}]
-    )
-
-    json_classification = None
-    for content in response.content:
-        if content.type == "tool_use" and content.name == "print_article_classification":
-            json_classification = content.input
-            break
-
-    if json_classification:
-        print("Text Classification (JSON):")
-        print(json.dumps(json_classification, indent=2))
-    else:
-        print("No text classification found in the response.")
-
-generate_json_for_article("Jeff Goldblum")
 
 ######################
 # Output
@@ -112,14 +80,59 @@ generate_json_for_article("Jeff Goldblum")
 #   ]
 # }
 
-def translate(sentence):
-    page = wikipedia.page(sentence, auto_suggest=True)
-    query = f"""
-    <document>
-    {page.content}
-    </document>
 
-    Use the print_article_classification tool. Example categories are Politics, Sports, Technology, Entertainment, Business.
+# tools2 = [
+#     {
+#         "name": "print_translation",
+#         "description": "Translate the result.",
+#         "input_schema": {
+#             "type": "object",
+#             "properties": {
+#                 "languages": {
+#                     "type": "string",
+#                     "description": "The language name.",
+#                 },
+#                 "translate": {
+#                     "type": "string",
+#                     "description": "The translation for the languages from this: english, spanish, french, japanese, arabic, italian"
+#                 }
+#             },
+#             "required": ["languages", "translate"]
+#         }
+#     }
+# ]
+
+tools = [
+    {
+        "name": "print_translation",
+        "description": "Translate the result.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "languages": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "language": {"type": "string", "description": "The language name."},
+                            "translate": {"type": "string", "description": "The translation for the languages from this: english, spanish, french, japanese, arabic, italian"}
+                        },
+                        "required": ["name", "score"]
+                    }
+                }
+            },
+            "required": ["languages"]
+        }
+    }
+]
+
+def translate(sentence):
+    query = f"""
+    <sentence>
+    {sentence}
+    </sentence>
+
+    Only use the print_translation tool. Example languages are english, spanish, french, japanese, arabic, italian.
     """
 
     response = client.messages.create(
@@ -129,15 +142,26 @@ def translate(sentence):
         messages=[{"role": "user", "content": query}]
     )
 
-    json_classification = None
+    translations_from_claude = None
     for content in response.content:
-        if content.type == "tool_use" and content.name == "print_article_classification":
-            json_classification = content.input
+        if content.type == "tool_use" and content.name == "print_translation":
+            translations_from_claude = content.input
             break
 
-    if json_classification:
-        print("Text Classification (JSON):")
-        print(json.dumps(json_classification, indent=2))
+    if translations_from_claude:
+        print("Text Translate (JSON):")
+        # print(translations_from_claude)
+        formatted_data = {item['language']: item['translate'] for item in translations_from_claude['languages']}
+        print(json.dumps(formatted_data, ensure_ascii=False, indent=2))
     else:
-        print("No text classification found in the response.")
+        print("No trasnalte found in the response.")
+
 translate("how much does this cost")
+
+# {
+#   "english": "how much does this cost",
+#   "spanish": "¿cuánto cuesta esto?",
+#   "french": "combien ça coûte?",
+#   "japanese": "これはいくらですか",
+#   "arabic": "كم تكلفة هذا؟"
+# }
