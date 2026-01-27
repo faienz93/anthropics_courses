@@ -97,7 +97,7 @@ def prompt_claude(prompt):
         print(response.content[0].text)
 
 
-# prompt_claude("I had 23 chickens but 2 flew away.  How many are left?")
+prompt_claude("I had 23 chickens but 2 flew away.  How many are left?")
 # prompt_claude("What is 201 times 2")
 # prompt_claude("Write me a haiku about the ocean")
 
