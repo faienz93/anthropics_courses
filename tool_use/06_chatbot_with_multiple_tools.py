@@ -152,7 +152,29 @@ def process_tool_call(tool_name, tool_input):
     elif tool_name == "cancel_order":
         return db.cancel_order(tool_input["order_id"])
     
+import re
+
+def extract_reply(text):
+    pattern = r'<reply>(.*?)</reply>'
+    match = re.search(pattern, text, re.DOTALL)
+    if match:
+        return match.group(1)
+    else:
+        return None    
+    
 def simple_chat():
+    system_prompt = """
+    You are a customer support chat bot for an online retailer called TechNova. 
+    Your job is to help users look up their account, orders, and cancel orders.
+    Be helpful and brief in your responses.
+    You have access to a set of tools, but only use them when needed.  
+    If you do not have enough information to use a tool correctly, ask a user follow up questions to get the required inputs.
+    Do not call any of the tools unless you have the required data from a user. 
+
+    In each conversational turn, you will begin by thinking about your response. 
+    Once you're done, you will write a user-facing response. 
+    It's important to place all user-facing conversational responses in <reply></reply> XML tags to make them easy to parse.
+    """
     user_message = input("\nUser: ")
     messages = [{"role": "user", "content": user_message}]
     while True:
@@ -164,6 +186,7 @@ def simple_chat():
         #Send a request to Claude
         response = client.messages.create(
             model=MODEL_NAME,
+            system=system_prompt,
             max_tokens=4096,
             tools=tools,
             messages=messages
@@ -179,6 +202,7 @@ def simple_chat():
             tool_name = tool_use.name
             tool_input = tool_use.input
             print(f"======Claude wants to use the {tool_name} tool======")
+
 
             #Actually run the underlying tool functionality on our db
             tool_result = process_tool_call(tool_name, tool_input)
@@ -198,8 +222,78 @@ def simple_chat():
             )
         else: 
             #If Claude does NOT want to use a tool, just print out the text reponse
-            print("\nTechNova Support: " + f"{response.content[0].text}" )
+            model_reply = extract_reply(response.content[0].text)
+            print("\nTechNova Support: " + f"{model_reply}" )
+
 
 # Start the chat!!
 # Puoi aiutarmi a capire lo stato del mio ordine? 74651?
 simple_chat()
+
+# =====================================
+# ITALIANO
+# =====================================
+# Utente: Ciao
+# Supporto TechNova: Ciao! Benvenuto nell'assistenza clienti TechNova. Come posso aiutarti oggi? Posso aiutarti a consultare le informazioni del tuo account, verificare lo stato di un ordine o annullarne uno. Dimmi pure di cosa hai bisogno!
+# Utente: Vorrei controllare un ordine che ho fatto.
+# Supporto TechNova: Sarò felice di verificare lo stato del tuo ordine. Per cercarlo, potresti fornirmi il numero dell'ordine? Lo trovi nell'email di conferma che ti abbiamo inviato quando hai effettuato l'acquisto.
+# Utente: Accidenti, non conosco il numero dell'ordine.
+# Supporto TechNova: Nessun problema se non hai il numero a portata di mano. Posso cercare i tuoi ordini usando le informazioni del tuo account.
+# Sai dirmi una delle seguenti informazioni?
+
+# L'indirizzo email associato al tuo account TechNova
+# Il numero di telefono associato al tuo account
+# Il tuo username TechNova
+
+# Con una di queste informazioni posso trovare il tuo account e mostrarti la lista dei tuoi ordini recenti.
+# Utente: Il mio indirizzo email è john@gmail.com
+# Supporto TechNova: Grazie per aver fornito il tuo indirizzo email, John. Sono riuscito a trovare il tuo account e a recuperare la cronologia dei tuoi ordini. Ecco un riepilogo:
+
+
+# Cuffie Wireless (Qtà 1) — 79,99 € — Stato: Spedito
+# Ordine n. 24601
+
+
+# Cover per Smartphone (Qtà 2) — 19,99 € — Stato: In lavorazione
+# Ordine n. 13579
+
+
+# Cover per Smartphone (Qtà 1) — 19,99 € — Stato: Spedito
+# Ordine n. 90357
+
+
+# Fammi sapere se ti servono altri dettagli su questi ordini, o se ce n'è uno in particolare su cui hai domande. Sono qui per aiutarti!
+
+# =====================================
+# INGLESE
+# =====================================
+# User: Hi
+# TechNova Support: Hello! Welcome to TechNova customer support. How may I assist you today? I'm happy to help you look up your account information, check on an order status, or help with cancelling an order. Just let me know what you need!
+# User: I want to check on an order I placed.
+# TechNova Support: I'd be happy to check on your order status. To look up your order, could you please provide me with the order ID number? You can find it in the order confirmation email we sent when you placed the order.
+# User: Oh shoot, I don't know the order ID.
+# TechNova Support: No worries if you don't have the order ID handy. I can also look up your orders using your customer account information.
+# Do you happen to know any of the following?
+
+# The email address associated with your TechNova account
+# The phone number associated with your account
+# Your TechNova username
+
+# If you provide me with one of those, I can locate your account and pull up a list of your recent orders.
+# User: My email address is john@gmail.com
+# TechNova Support: Thanks for providing your email address, John. I was able to locate your account and pull up your recent order history. Here is a summary of the orders I found:
+
+
+# Wireless Headphones (Qty 1) — $79.99 — Status: Shipped
+# Order #24601
+
+
+# Smartphone Case (Qty 2) — $19.99 — Status: Processing
+# Order #13579
+
+
+# Smartphone Case (Qty 1) — $19.99 — Status: Shipped
+# Order #90357
+
+
+# Let me know if you need any other details about these orders, or if there's a particular one you have questions about. I'm happy to help!
