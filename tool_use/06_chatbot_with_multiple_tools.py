@@ -18,7 +18,7 @@ client = anthropic.Client()
 class FakeDatabase:
     def __init__(self):
         self.customers = [
-            {"id": "1213210", "name": "John Doe", "email": "john@gmail.com", "phone": "123-456-7890", "username": "johndoe"},
+            {"id": "1213210", "name": "Antonio Faienza", "email": "antonio@gmail.com", "phone": "123-456-7890", "username": "antonio"},
             {"id": "2837622", "name": "Priya Patel", "email": "priya@candy.com", "phone": "987-654-3210", "username": "priya123"},
             {"id": "3924156", "name": "Liam Nguyen", "email": "lnguyen@yahoo.com", "phone": "555-123-4567", "username": "liamn"},
             {"id": "4782901", "name": "Aaliyah Davis", "email": "aaliyahd@hotmail.com", "phone": "111-222-3333", "username": "adavis"},
@@ -46,11 +46,18 @@ class FakeDatabase:
             {"id": "28164", "customer_id": "2837622", "product": "Wireless Headphones", "quantity": 2, "price": 79.99, "status": "Processing"}
         ]
 
-    def get_user(self, key, value):
+    def get_customer_orders(self, customer_id):
+        return [order for order in self.orders if order["customer_id"] == customer_id]
+
+    def get_user_info(self, key, value):
         if key in {"email", "phone", "username"}:
             for customer in self.customers:
                 if customer[key] == value:
-                    return customer
+                    customer_order =  self.get_customer_orders(customer['id'])
+                    return {
+                        "customer": customer,
+                        "order": customer_order
+                    }
             return f"Couldn't find a user with {key} of {value}"
         else:
             raise ValueError(f"Invalid key: {key}")
@@ -63,8 +70,7 @@ class FakeDatabase:
                 return order
         return None
     
-    def get_customer_orders(self, customer_id):
-        return [order for order in self.orders if order["customer_id"] == customer_id]
+
 
     def cancel_order(self, order_id):
         order = self.get_order_by_id(order_id)
@@ -78,7 +84,7 @@ class FakeDatabase:
 
 tools = [
     {
-        "name": "get_user",
+        "name": "get_user_info",
         "description": "Looks up a user by email, phone, or username.",
         "input_schema": {
             "type": "object",
@@ -110,20 +116,20 @@ tools = [
             "required": ["order_id"]
         }
     },
-    {
-        "name": "get_customer_orders",
-        "description": "Retrieves the list of orders belonging to a user based on a user's customer id.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "customer_id": {
-                    "type": "string",
-                    "description": "The customer_id belonging to the user"
-                }
-            },
-            "required": ["customer_id"]
-        }
-    },
+    # {
+    #     "name": "get_customer_orders",
+    #     "description": "Retrieves the list of orders belonging to a user based on a user's customer id.",
+    #     "input_schema": {
+    #         "type": "object",
+    #         "properties": {
+    #             "customer_id": {
+    #                 "type": "string",
+    #                 "description": "The customer_id belonging to the user"
+    #             }
+    #         },
+    #         "required": ["customer_id"]
+    #     }
+    # },
     {
         "name": "cancel_order",
         "description": "Cancels an order based on a provided order_id.  Only orders that are 'processing' can be cancelled",
@@ -143,12 +149,13 @@ tools = [
 db = FakeDatabase()
 
 def process_tool_call(tool_name, tool_input):
-    if tool_name == "get_user":
-        return db.get_user(tool_input["key"], tool_input["value"])
+    if tool_name == "get_user_info":
+        print("GET USER INFO!!!")
+        return db.get_user_info(tool_input["key"], tool_input["value"])
     elif tool_name == "get_order_by_id":
         return db.get_order_by_id(tool_input["order_id"])
-    elif tool_name == "get_customer_orders":
-        return db.get_customer_orders(tool_input["customer_id"])
+    # elif tool_name == "get_customer_orders":
+    #     return db.get_customer_orders(tool_input["customer_id"])
     elif tool_name == "cancel_order":
         return db.cancel_order(tool_input["order_id"])
     
