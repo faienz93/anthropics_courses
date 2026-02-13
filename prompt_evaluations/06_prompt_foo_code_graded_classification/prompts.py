@@ -9,7 +9,6 @@ def basic_prompt(complaint):
     Classification:
     """
 
-
 def improved_prompt(complaint):
     return f"""
     You are an AI assistant specializing in customer support issue classification. Your task is to analyze customer complaints and categorize them into one or more of the following categories:
